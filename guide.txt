@@ -1,0 +1,41 @@
+INSTALL JAVA ON EC2:
+sudo yum install -y java-1.8.0-amazon-corretto-devel
+java -version
+
+
+
+INSTALL KAFKA ON EC2
+wget https://downloads.apache.org/kafka/3.8.0/kafka_2.13-3.8.0.tgz
+tar -xvf kafka_2.13-3.8.0.tgz
+
+ALLOCATE SOME MEMORY TO KAFKA ON EC2
+cd kafka_2.13-3.8.0/
+sudo nano bin/kafka-server-start.sh
+
+Write this on top of that file:
+export KAFKA_HEAP_OPTS="-Xmx256M -Xms128M"
+
+START zookeeper service: 
+cd kafka_2.13-3.8.0
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+CHANGE KAFKA FROM PUBLIC DNS to global one:
+sudo nano config/server.properties 
+Change this:
+- change ADVERTISED_LISTENERS to public ip of the EC2 instance
+
+RUN KAFKA SERVER:
+cd kafka_2.12-3.3.1
+bin/kafka-server-start.sh config/server.properties
+
+CREATE TOPICS:
+bin/kafka-topics.sh --create --topic <topic_name> --bootstrap-server <EC2_PUBLIC_IP>:9092 --replication-factor 1 --partitions 1
+
+DELETE TOPICS:
+bin/kafka-topics.sh --delete --topic <topic_name> --bootstrap-server <EC2_PUBLIC_IP>:9092
+
+CREATE PRODUCERS:
+bin/kafka-console-producer.sh --topic <topic_name> --bootstrap-server <EC2_PUBLIC_IP>:9092
+ 
+CREATE CONSUMERS:
+bin/kafka-console-consumer.sh --topic <topic_name> --bootstrap-server <EC2_PUBLIC_IP>:9092 
